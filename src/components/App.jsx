@@ -765,9 +765,9 @@ export default function App({ initialLang = 'auto' }) {
                         gap: 2,
                     }}>
                         {[
-                            { mode: 'light', icon: 'sun',     label: lang === 'zh' ? '白天' : 'Light' },
+                            { mode: 'light', icon: 'sun', label: lang === 'zh' ? '白天' : 'Light' },
                             { mode: 'system', icon: 'monitor', label: lang === 'zh' ? '跟随系统' : 'Auto' },
-                            { mode: 'dark',  icon: 'moon',    label: lang === 'zh' ? '夜晚' : 'Dark' },
+                            { mode: 'dark', icon: 'moon', label: lang === 'zh' ? '夜晚' : 'Dark' },
                         ].map(({ mode, icon, label }) => (
                             <button
                                 key={mode}
