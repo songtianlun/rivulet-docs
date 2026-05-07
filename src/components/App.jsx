@@ -654,6 +654,110 @@ function QuickDeploySection({ theme, lang, t }) {
     );
 }
 
+// ── LIGHTBOX ─────────────────────────────────────────────────
+function Lightbox({ slides, index, onClose, onPrev, onNext }) {
+    useEffect(() => {
+        const handler = (e) => {
+            if (e.key === 'Escape') onClose();
+            if (e.key === 'ArrowLeft') onPrev();
+            if (e.key === 'ArrowRight') onNext();
+        };
+        window.addEventListener('keydown', handler);
+        document.body.style.overflow = 'hidden';
+        return () => {
+            window.removeEventListener('keydown', handler);
+            document.body.style.overflow = '';
+        };
+    }, [onClose, onPrev, onNext]);
+
+    return (
+        <div
+            onClick={onClose}
+            style={{
+                position: 'fixed', inset: 0, zIndex: 9999,
+                background: 'rgba(0,0,0,0.92)',
+                backdropFilter: 'blur(12px)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                animation: 'fadeIn 0.2s ease',
+            }}
+        >
+            {/* Image container */}
+            <div
+                onClick={e => e.stopPropagation()}
+                style={{
+                    position: 'relative',
+                    maxWidth: 'min(92vw, 1280px)',
+                    maxHeight: '90vh',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+            >
+                <img
+                    src={slides[index].src}
+                    alt={slides[index].label}
+                    style={{
+                        maxWidth: '100%', maxHeight: '90vh',
+                        borderRadius: 12,
+                        boxShadow: '0 32px 80px rgba(0,0,0,0.6)',
+                        display: 'block',
+                        objectFit: 'contain',
+                        animation: 'fadeIn 0.25s ease',
+                    }}
+                />
+
+                {/* Prev */}
+                <button onClick={(e) => { e.stopPropagation(); onPrev(); }} aria-label="Previous"
+                    style={{
+                        position: 'absolute', left: -56, top: '50%', transform: 'translateY(-50%)',
+                        width: 44, height: 44, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)',
+                        background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(8px)',
+                        color: '#fff', fontSize: 26, cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'background 0.2s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.18)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                >‹</button>
+
+                {/* Next */}
+                <button onClick={(e) => { e.stopPropagation(); onNext(); }} aria-label="Next"
+                    style={{
+                        position: 'absolute', right: -56, top: '50%', transform: 'translateY(-50%)',
+                        width: 44, height: 44, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)',
+                        background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(8px)',
+                        color: '#fff', fontSize: 26, cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'background 0.2s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.18)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                >›</button>
+
+                {/* Caption */}
+                <div style={{
+                    position: 'absolute', bottom: -36, left: 0, right: 0, textAlign: 'center',
+                    fontSize: 13, color: 'rgba(255,255,255,0.6)', letterSpacing: 0.5,
+                }}>
+                    {slides[index].label} &nbsp;·&nbsp; {index + 1} / {slides.length}
+                </div>
+            </div>
+
+            {/* Close button */}
+            <button onClick={onClose} aria-label="Close"
+                style={{
+                    position: 'fixed', top: 20, right: 20,
+                    width: 40, height: 40, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)',
+                    background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(8px)',
+                    color: '#fff', fontSize: 20, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'background 0.2s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+            >✕</button>
+        </div>
+    );
+}
+
 // ── SCREENSHOT CAROUSEL ──────────────────────────────────────
 const SCREENSHOTS = [
     { file: 'Rivulet_dashboard_2026-05-07_22-29-38.png',    zh: '仪表盘',   en: 'Dashboard' },
@@ -677,6 +781,7 @@ function ScreenshotCarousel({ theme, lang }) {
     const [touchStartX, setTouchStartX] = useState(null);
     const containerRef = useRef(null);
     const [inView, setInView] = useState(false);
+    const [lightboxIdx, setLightboxIdx] = useState(null);
 
     useEffect(() => {
         const obs = new IntersectionObserver(
@@ -706,6 +811,8 @@ function ScreenshotCarousel({ theme, lang }) {
 
     const goPrev = () => setCurrent(c => (c - 1 + slides.length) % slides.length);
     const goNext = () => setCurrent(c => (c + 1) % slides.length);
+    const lbPrev = () => setLightboxIdx(i => (i - 1 + slides.length) % slides.length);
+    const lbNext = () => setLightboxIdx(i => (i + 1) % slides.length);
 
     const onTouchStart = (e) => setTouchStartX(e.touches[0].clientX);
     const onTouchEnd = (e) => {
@@ -731,6 +838,17 @@ function ScreenshotCarousel({ theme, lang }) {
 
     return (
         <div ref={containerRef} style={{ width: '100%', maxWidth: 960, margin: '0 auto' }}>
+            {/* Lightbox */}
+            {lightboxIdx !== null && (
+                <Lightbox
+                    slides={slides}
+                    index={lightboxIdx}
+                    onClose={() => setLightboxIdx(null)}
+                    onPrev={lbPrev}
+                    onNext={lbNext}
+                />
+            )}
+
             {/* Viewport */}
             <div
                 style={{
@@ -776,6 +894,18 @@ function ScreenshotCarousel({ theme, lang }) {
                         animation: 'shimmer 1.6s infinite',
                     }} />
                 )}
+
+                {/* Click-to-lightbox zone (center 50% width, avoids arrows) */}
+                <div
+                    onClick={() => setLightboxIdx(current)}
+                    title={lang === 'zh' ? '点击放大' : 'Click to enlarge'}
+                    style={{
+                        position: 'absolute',
+                        top: 0, bottom: 0,
+                        left: '15%', right: '15%',
+                        zIndex: 2, cursor: 'zoom-in',
+                    }}
+                />
 
                 {/* Prev arrow */}
                 <button
@@ -861,6 +991,8 @@ export default function App({ initialLang = 'auto' }) {
     const [scrolled, setScrolled] = useState(false);
     const [colorMode, setColorMode] = useState('system'); // 'light' | 'dark' | 'system'
     const [systemDark, setSystemDark] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
         if (initialLang === 'auto') {
@@ -902,6 +1034,19 @@ export default function App({ initialLang = 'auto' }) {
         return () => window.removeEventListener('scroll', fn);
     }, []);
 
+    useEffect(() => {
+        const check = () => setIsMobile(window.innerWidth < 768);
+        check();
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, []);
+
+    // Close menu on scroll
+    useEffect(() => {
+        if (menuOpen) setMenuOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [scrolled]);
+
     const features = [
         { icon: 'flow', title: t.f1_t, desc: t.f1_d },
         { icon: 'wallet', title: t.f2_t, desc: t.f2_d },
@@ -925,90 +1070,200 @@ export default function App({ initialLang = 'auto' }) {
             {/* ── NAV ── */}
             <nav style={{
                 position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-                padding: '0 clamp(24px, 5vw, 80px)', height: 64,
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                background: scrolled ? theme.bg + 'f2' : 'transparent',
-                backdropFilter: scrolled ? 'blur(16px)' : 'none',
-                borderBottom: scrolled ? `1px solid ${theme.border}` : '1px solid transparent',
-                transition: 'all 0.3s ease',
+                background: (scrolled || menuOpen) ? theme.bg + 'f5' : 'transparent',
+                backdropFilter: (scrolled || menuOpen) ? 'blur(16px)' : 'none',
+                borderBottom: (scrolled || menuOpen) ? `1px solid ${theme.border}` : '1px solid transparent',
+                transition: 'background 0.3s ease, border-color 0.3s ease',
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <img src="/logo.png" alt="Rivulet logo" style={{ width: 28, height: 28, borderRadius: 8 }} />
-                    <span style={{ fontSize: 16, fontWeight: 700, color: theme.text, letterSpacing: -0.3 }}>
-                        {lang === 'zh' ? '溪流记账' : 'Rivulet'}
-                    </span>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-                    <div style={{ display: 'flex', gap: 24, fontSize: 14, color: theme.muted }}>
-                        {[['#quickstart', t.nav_quickstart], ['#features', t.nav_features], ['#faq', t.nav_faq], [(lang === 'zh' ? '/zh/guestbook' : '/en/guestbook'), t.nav_guestbook]].map(([href, label]) => (
-                            <a
-                                key={href} href={href}
-                                style={{ color: theme.muted, textDecoration: 'none', transition: 'color 0.2s' }}
-                                onMouseEnter={e => (e.target.style.color = theme.text)}
-                                onMouseLeave={e => (e.target.style.color = theme.muted)}
-                            >
-                                {label}
-                            </a>
-                        ))}
+                {/* Top bar */}
+                <div style={{
+                    padding: '0 clamp(20px, 5vw, 80px)', height: 64,
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <img src="/logo.png" alt="Rivulet logo" style={{ width: 28, height: 28, borderRadius: 8 }} />
+                        <span style={{ fontSize: 16, fontWeight: 700, color: theme.text, letterSpacing: -0.3 }}>
+                            {lang === 'zh' ? '溪流记账' : 'Rivulet'}
+                        </span>
                     </div>
 
-                    {/* Color mode toggle */}
-                    <div style={{
-                        display: 'flex', alignItems: 'center',
-                        background: theme.bgAlt, borderRadius: 24,
-                        border: `1px solid ${theme.border}`, padding: '3px',
-                        gap: 2,
-                    }}>
-                        {[
-                            { mode: 'light', icon: 'sun', label: lang === 'zh' ? '白天' : 'Light' },
-                            { mode: 'system', icon: 'monitor', label: lang === 'zh' ? '跟随系统' : 'Auto' },
-                            { mode: 'dark', icon: 'moon', label: lang === 'zh' ? '夜晚' : 'Dark' },
-                        ].map(({ mode, icon, label }) => (
-                            <button
-                                key={mode}
-                                onClick={() => handleColorMode(mode)}
-                                title={label}
+                    {/* Desktop right side */}
+                    {!isMobile && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                            <div style={{ display: 'flex', gap: 24, fontSize: 14, color: theme.muted }}>
+                                {[['#quickstart', t.nav_quickstart], ['#features', t.nav_features], ['#faq', t.nav_faq], [(lang === 'zh' ? '/zh/guestbook' : '/en/guestbook'), t.nav_guestbook]].map(([href, label]) => (
+                                    <a
+                                        key={href} href={href}
+                                        style={{ color: theme.muted, textDecoration: 'none', transition: 'color 0.2s' }}
+                                        onMouseEnter={e => (e.target.style.color = theme.text)}
+                                        onMouseLeave={e => (e.target.style.color = theme.muted)}
+                                    >
+                                        {label}
+                                    </a>
+                                ))}
+                            </div>
+
+                            {/* Color mode toggle */}
+                            <div style={{
+                                display: 'flex', alignItems: 'center',
+                                background: theme.bgAlt, borderRadius: 24,
+                                border: `1px solid ${theme.border}`, padding: '3px', gap: 2,
+                            }}>
+                                {[
+                                    { mode: 'light', icon: 'sun', label: lang === 'zh' ? '白天' : 'Light' },
+                                    { mode: 'system', icon: 'monitor', label: lang === 'zh' ? '跟随系统' : 'Auto' },
+                                    { mode: 'dark', icon: 'moon', label: lang === 'zh' ? '夜晚' : 'Dark' },
+                                ].map(({ mode, icon, label }) => (
+                                    <button key={mode} onClick={() => handleColorMode(mode)} title={label}
+                                        style={{
+                                            width: 28, height: 28, borderRadius: 20, border: 'none',
+                                            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            background: colorMode === mode ? theme.accent : 'transparent',
+                                            color: colorMode === mode ? '#fff' : theme.muted,
+                                            transition: 'background 0.2s ease, color 0.2s ease',
+                                        }}
+                                    >
+                                        <Icon name={icon} size={14} color={colorMode === mode ? '#fff' : theme.muted} />
+                                    </button>
+                                ))}
+                            </div>
+
+                            <a href={lang === 'zh' ? '/en/' : '/zh/'}
                                 style={{
-                                    width: 28, height: 28, borderRadius: 20, border: 'none',
-                                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    background: colorMode === mode ? theme.accent : 'transparent',
-                                    color: colorMode === mode ? '#fff' : theme.muted,
-                                    transition: 'background 0.2s ease, color 0.2s ease',
+                                    padding: '5px 12px', borderRadius: 20, border: `1px solid ${theme.border}`,
+                                    textDecoration: 'none', fontSize: 12, color: theme.muted,
+                                    transition: 'all 0.2s', display: 'inline-block',
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = theme.accent; e.currentTarget.style.color = theme.accent; }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = theme.border; e.currentTarget.style.color = theme.muted; }}
+                            >
+                                {lang === 'zh' ? 'EN' : '中文'}
+                            </a>
+
+                            <a href="https://demo.rivulet.app/" target="_blank" rel="noopener noreferrer"
+                                style={{
+                                    padding: '7px 18px', borderRadius: 24, background: theme.accent, color: '#fff',
+                                    textDecoration: 'none', fontSize: 13, fontWeight: 500,
+                                    boxShadow: `0 2px 12px ${theme.accent}40`, transition: 'all 0.2s',
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.background = theme.accentDark; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = theme.accent; e.currentTarget.style.transform = 'translateY(0)'; }}
+                            >
+                                {t.nav_demo}
+                            </a>
+                        </div>
+                    )}
+
+                    {/* Mobile right side */}
+                    {isMobile && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            {/* Compact color mode */}
+                            <div style={{
+                                display: 'flex', alignItems: 'center',
+                                background: theme.bgAlt, borderRadius: 20,
+                                border: `1px solid ${theme.border}`, padding: '3px', gap: 2,
+                            }}>
+                                {[
+                                    { mode: 'light', icon: 'sun' },
+                                    { mode: 'system', icon: 'monitor' },
+                                    { mode: 'dark', icon: 'moon' },
+                                ].map(({ mode, icon }) => (
+                                    <button key={mode} onClick={() => handleColorMode(mode)}
+                                        style={{
+                                            width: 26, height: 26, borderRadius: 18, border: 'none',
+                                            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            background: colorMode === mode ? theme.accent : 'transparent',
+                                            transition: 'background 0.2s ease',
+                                        }}
+                                    >
+                                        <Icon name={icon} size={13} color={colorMode === mode ? '#fff' : theme.muted} />
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Hamburger */}
+                            <button
+                                onClick={() => setMenuOpen(o => !o)}
+                                aria-label="Toggle menu"
+                                style={{
+                                    width: 40, height: 40, borderRadius: 10, border: `1px solid ${theme.border}`,
+                                    background: menuOpen ? theme.accentLight : theme.bgAlt,
+                                    cursor: 'pointer', display: 'flex', flexDirection: 'column',
+                                    alignItems: 'center', justifyContent: 'center', gap: 5, padding: 0,
+                                    transition: 'background 0.2s',
                                 }}
                             >
-                                <Icon name={icon} size={14} color={colorMode === mode ? '#fff' : theme.muted} />
+                                <span style={{
+                                    display: 'block', width: 18, height: 2, borderRadius: 2,
+                                    background: menuOpen ? theme.accent : theme.text,
+                                    transform: menuOpen ? 'translateY(7px) rotate(45deg)' : 'none',
+                                    transition: 'transform 0.25s ease, background 0.2s',
+                                }} />
+                                <span style={{
+                                    display: 'block', width: 18, height: 2, borderRadius: 2,
+                                    background: menuOpen ? theme.accent : theme.text,
+                                    opacity: menuOpen ? 0 : 1,
+                                    transition: 'opacity 0.2s ease',
+                                }} />
+                                <span style={{
+                                    display: 'block', width: 18, height: 2, borderRadius: 2,
+                                    background: menuOpen ? theme.accent : theme.text,
+                                    transform: menuOpen ? 'translateY(-7px) rotate(-45deg)' : 'none',
+                                    transition: 'transform 0.25s ease, background 0.2s',
+                                }} />
                             </button>
-                        ))}
-                    </div>
-
-                    {/* Language toggle */}
-                    <a
-                        href={lang === 'zh' ? '/en/' : '/zh/'}
-                        style={{
-                            padding: '5px 12px', borderRadius: 20, border: `1px solid ${theme.border}`,
-                            textDecoration: 'none', fontSize: 12, color: theme.muted,
-                            transition: 'all 0.2s', display: 'inline-block',
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = theme.accent; e.currentTarget.style.color = theme.accent; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = theme.border; e.currentTarget.style.color = theme.muted; }}
-                    >
-                        {lang === 'zh' ? 'EN' : '中文'}
-                    </a>
-
-                    <a
-                        href="https://demo.rivulet.app/" target="_blank" rel="noopener noreferrer"
-                        style={{
-                            padding: '7px 18px', borderRadius: 24, background: theme.accent, color: '#fff',
-                            textDecoration: 'none', fontSize: 13, fontWeight: 500,
-                            boxShadow: `0 2px 12px ${theme.accent}40`, transition: 'all 0.2s',
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.background = theme.accentDark; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = theme.accent; e.currentTarget.style.transform = 'translateY(0)'; }}
-                    >
-                        {t.nav_demo}
-                    </a>
+                        </div>
+                    )}
                 </div>
+
+                {/* Mobile dropdown menu */}
+                {isMobile && (
+                    <div style={{
+                        maxHeight: menuOpen ? 400 : 0,
+                        overflow: 'hidden',
+                        transition: 'max-height 0.35s ease',
+                        borderTop: menuOpen ? `1px solid ${theme.border}` : '1px solid transparent',
+                    }}>
+                        <div style={{ padding: '16px 24px 20px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            {[['#quickstart', t.nav_quickstart], ['#features', t.nav_features], ['#faq', t.nav_faq], [(lang === 'zh' ? '/zh/guestbook' : '/en/guestbook'), t.nav_guestbook]].map(([href, label]) => (
+                                <a key={href} href={href}
+                                    onClick={() => setMenuOpen(false)}
+                                    style={{
+                                        display: 'block', padding: '11px 12px', borderRadius: 10,
+                                        color: theme.text, textDecoration: 'none', fontSize: 15, fontWeight: 500,
+                                        transition: 'background 0.15s',
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.background = theme.accentLight}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                >
+                                    {label}
+                                </a>
+                            ))}
+                            <div style={{ height: 1, background: theme.border, margin: '8px 0' }} />
+                            <div style={{ display: 'flex', gap: 10, padding: '4px 12px', alignItems: 'center' }}>
+                                <a href={lang === 'zh' ? '/en/' : '/zh/'}
+                                    style={{
+                                        flex: 1, padding: '10px 0', borderRadius: 10, border: `1px solid ${theme.border}`,
+                                        textDecoration: 'none', fontSize: 13, color: theme.muted, textAlign: 'center',
+                                        background: theme.bgAlt,
+                                    }}
+                                >
+                                    {lang === 'zh' ? 'EN' : '中文'}
+                                </a>
+                                <a href="https://demo.rivulet.app/" target="_blank" rel="noopener noreferrer"
+                                    onClick={() => setMenuOpen(false)}
+                                    style={{
+                                        flex: 2, padding: '10px 0', borderRadius: 10, background: theme.accent, color: '#fff',
+                                        textDecoration: 'none', fontSize: 14, fontWeight: 600, textAlign: 'center',
+                                        boxShadow: `0 2px 12px ${theme.accent}40`,
+                                    }}
+                                >
+                                    {t.nav_demo}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </nav>
 
             {/* ── HERO ── */}

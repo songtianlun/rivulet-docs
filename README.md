@@ -10,6 +10,8 @@
 
 Rivulet is a minimalist yet powerful personal finance app. Track income and expenses fast, organize with multiple accounts and ledgers, and collaborate via shared ledgers. Stay on top of budgets, log investments, and unlock clear analytics to understand where your money goes.
 
+![Rivulet Demo Gif](public/screenshots/Rivulet_demo.gif)
+
 Rivulet 使用 GO 和 Svelte 开发，并使用 Docker 封装并公开发布，支持 SQLite 和 PostgreSQL 数据库。
 
 Rivulet is built with Go and Svelte, and is packaged and published using Docker. It supports both SQLite and PostgreSQL databases.
