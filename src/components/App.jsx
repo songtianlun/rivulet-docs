@@ -33,6 +33,7 @@ const T = {
         nav_features: '功能',
         nav_faq: 'FAQ',
         nav_guestbook: '留言板',
+        nav_changelog: '更新日志',
         hero_eyebrow: '个人财务管理',
         hero_h1_a: '让你的钱',
         hero_h1_b: '流向清晰可控',
@@ -89,6 +90,7 @@ const T = {
         nav_features: 'Features',
         nav_faq: 'FAQ',
         nav_guestbook: 'Guestbook',
+        nav_changelog: 'Changelog',
         hero_eyebrow: 'Personal Finance',
         hero_h1_a: 'See exactly',
         hero_h1_b: 'where your money flows',
@@ -1091,7 +1093,7 @@ export default function App({ initialLang = 'auto' }) {
                     {!isMobile && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                             <div style={{ display: 'flex', gap: 24, fontSize: 14, color: theme.muted }}>
-                                {[['#quickstart', t.nav_quickstart], ['#features', t.nav_features], ['#faq', t.nav_faq], [(lang === 'zh' ? '/zh/guestbook' : '/en/guestbook'), t.nav_guestbook]].map(([href, label]) => (
+                                {[['#quickstart', t.nav_quickstart], ['#features', t.nav_features], ['#faq', t.nav_faq], [(lang === 'zh' ? '/zh/guestbook' : '/en/guestbook'), t.nav_guestbook], [(lang === 'zh' ? '/zh/changelog' : '/en/changelog'), t.nav_changelog]].map(([href, label]) => (
                                     <a
                                         key={href} href={href}
                                         style={{ color: theme.muted, textDecoration: 'none', transition: 'color 0.2s' }}
@@ -1225,7 +1227,7 @@ export default function App({ initialLang = 'auto' }) {
                         borderTop: menuOpen ? `1px solid ${theme.border}` : '1px solid transparent',
                     }}>
                         <div style={{ padding: '16px 24px 20px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                            {[['#quickstart', t.nav_quickstart], ['#features', t.nav_features], ['#faq', t.nav_faq], [(lang === 'zh' ? '/zh/guestbook' : '/en/guestbook'), t.nav_guestbook]].map(([href, label]) => (
+                            {[['#quickstart', t.nav_quickstart], ['#features', t.nav_features], ['#faq', t.nav_faq], [(lang === 'zh' ? '/zh/guestbook' : '/en/guestbook'), t.nav_guestbook], [(lang === 'zh' ? '/zh/changelog' : '/en/changelog'), t.nav_changelog]].map(([href, label]) => (
                                 <a key={href} href={href}
                                     onClick={() => setMenuOpen(false)}
                                     style={{
