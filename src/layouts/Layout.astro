@@ -35,6 +35,15 @@ const htmlLang = lang === 'zh' ? 'zh-CN' : 'en';
       plausible('pageview', { props: { domain: window.location.hostname } })
     </script>
     <script defer data-domain="rivulet.app" src="https://plausible.frytea.com/js/script.pageview-props.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5J9JVY4L4Z"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-5J9JVY4L4Z');
+    </script>
   </head>
   <body>
     <slot />
